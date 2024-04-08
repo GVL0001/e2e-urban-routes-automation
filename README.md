@@ -23,6 +23,7 @@ El proyecto cuenta con los siguientes archivos:
 ## Lista de Comprobación
 
 | Caso de Prueba | Estado |
+<<<<<<< HEAD
 | --- |--|
 | 1. Configurar la dirección |  |
 | 2. Seleccionar la tarifa Comfort |  |
@@ -33,6 +34,18 @@ El proyecto cuenta con los siguientes archivos:
 | 7. Pedir 2 helados |  |
 | 8. Aparece el modal para buscar un taxi |  |
 | 9. Esperar a que aparezca la información del conductor en el modal |  |
+=======
+| --- | --- |
+| 1. Configurar la dirección | ✓ |
+| 2. Seleccionar la tarifa Comfort | ✓ |
+| 3. Rellenar el número de teléfono | ✓ |
+| 4. Agregar una tarjeta de crédito | ✓ |
+| 5. Escribir un mensaje para el conductor | ✓ |
+| 6. Pedir una manta y pañuelos | ✓ |
+| 7. Pedir 2 helados | ✓ |
+| 8. Aparece el modal para buscar un taxi | ✓ |
+| 9. Esperar a que aparezca la información del conductor en el modal | ✓ |
+>>>>>>> 824cbd152ad8db7c79caeef65462c107fff39f2e
 
 ## Instrucciones de Ejecución
 
@@ -45,4 +58,8 @@ El proyecto cuenta con los siguientes archivos:
 ## Mis redes
 
 - **LinkedIn:** [Gustavo Ángel Vargas Leal](https://www.linkedin.com/in/gustavo-angel-vargas-leal/)
+<<<<<<< HEAD
 - **GitHub:** [GVL0001](https://github.com/GVL0001)
+=======
+- **GitHub:** [GVL0001](https://github.com/GVL0001)
+>>>>>>> 824cbd152ad8db7c79caeef65462c107fff39f2e
