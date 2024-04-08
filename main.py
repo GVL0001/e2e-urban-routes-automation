@@ -2,8 +2,6 @@ import data
 from selenium import webdriver
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.wait import WebDriverWait
 import time
 
 
@@ -40,6 +38,7 @@ class UrbanRoutesPage:
     to_field = (By.ID, 'to')
     taxi_button = (By.XPATH, "//button[@class='button round']")
     comfort_button = (By.XPATH, "(//img[@alt='Comfort'])[1]")
+    comfort_button_container = (By.XPATH, "//div[@class='tcard active']")
     phone_button = (By.XPATH, "//div[text()='Número de teléfono']")
     phone_field = (By.ID, "phone")
     phone_next_button = (By.XPATH, "(//button[@type='submit'])[1]")
@@ -49,12 +48,16 @@ class UrbanRoutesPage:
     add_card_button = (By.XPATH, "//div[@class='pp-plus-container']//img[1]")
     card_number_field = (By.ID, "number")
     card_code_field = (By.XPATH, "(//input[@id='code'])[2]")
-    add_card_confirm_button = (By.XPATH, "(//button[@class='button full'])[4]")
+    add_card_confirm_button = (By.XPATH, "//button[text()='Agregar']")
     exit_button_in_payment_popup = (By.XPATH, "(//button[@class='close-button section-close'])[3]")
+    payment_method_selected = (By.CLASS_NAME, 'pp-value-text')
     message_to_driver_field = (By.ID, "comment")
     blankets_and_tissues_button = (By.XPATH, "(//span[@class='slider round'])[1]")
+    blankets_and_tissues_checkbox = (By.CSS_SELECTOR, ".switch input.switch-input")
     add_ice_cream_button = (By.XPATH, "(//div[@class='counter-plus'])[1]")
+    ice_cream_counter = (By.XPATH, "(//div[@class='counter']//div)[2]")
     order_taxi_button = (By.XPATH, "(//button[@type='button']//span)[1]")
+    waiting_popup_header = (By.CLASS_NAME, "order-header-title")
 
     def __init__(self, driver):
         self.driver = driver
@@ -122,6 +125,10 @@ class UrbanRoutesPage:
     def click_exit_button_in_payment_popup(self):
         self.driver.find_element(*self.exit_button_in_payment_popup).click()
 
+    def get_blankets_and_tissues_button_state(self):
+        checkbox = self.driver.find_element(*self.blankets_and_tissues_checkbox)
+        return checkbox.is_selected()
+
     def set_message_to_driver(self):
         self.driver.find_element(*self.message_to_driver_field).send_keys(data.message_for_driver)
 
@@ -150,36 +157,76 @@ class TestUrbanRoutes:
         cls.driver = webdriver.Chrome() # desired_capabilities = capabilities
         cls.driver.implicitly_wait(10)
 
+    # Prueba 1: Configurar la dirección
     def test_set_route(self):
-        # Ingresa y verifica la dirección
-        self.driver.get(data.urban_routes_url)
         routes_page = UrbanRoutesPage(self.driver)
         address_from = data.address_from
         address_to = data.address_to
-        routes_page.set_route(address_from, address_to)
+        routes_page.set_route(address_from, address_to) # Conjunto de pasos para ingresar las direcciones
         assert routes_page.get_from() == address_from
         assert routes_page.get_to() == address_to
 
-        routes_page.click_request_taxi_button() # Presiona el botón pedir un taxi
-        routes_page.click_comfort_button() # Selecciona la clase comfort
-        routes_page.click_phone_button() # Presiona el campo de número de teléfono
-        routes_page.set_phone_number(data.phone_number) # Ingresa el número de telefóno
-        routes_page.click_phone_next_button() # Presiona el botón siguiente dentro del campo del número
-        routes_page.set_verification_code() # Ingresa el código de verificación
-        routes_page.click_confirm_button_in_verification_popup() # Presiona el botón de confirmación
-        routes_page.click_payment_method_field() # Presiona el campo de método de pago
-        routes_page.click_add_card_button() # Presiona el botón de agregar tarjeta
-        routes_page.set_card_number() # Ingresa el número de tarjeta
-        routes_page.set_card_code() # Ingresa el código de la tarjeta
-        routes_page.press_tab_key() # Presiona la tecla TAB
-        routes_page.click_add_card_confirm_button() # Presiona el botón de confirmación
-        routes_page.click_exit_button_in_payment_popup() # Presiona el botón de salida
-        routes_page.set_message_to_driver() # Ingresa el mensaje para el conductor
-        routes_page.click_blankets_and_tissues_button() # Presiona el botón de mantas y pañuelos
-        routes_page.click_add_ice_cream_button(2) # Presionar el botón de agregar helado n veces
-        routes_page.click_order_taxi_button() # Presiona el botón de pedir taxi
-        time.sleep(5) # Espera 5 segundos
+    # Prueba 2: Solicitar un taxi y seleccionar la tarifa comfort
+    def test_request_comfort_taxi(self):
+        routes_page = UrbanRoutesPage(self.driver)
+        routes_page.click_request_taxi_button()
+        routes_page.click_comfort_button()
+        assert self.driver.find_element(*routes_page.comfort_button_container).get_attribute('class') == 'tcard active'
 
+    # Prueba 3: Rellenar el número de teléfono
+    def test_phone_verification(self):
+        routes_page = UrbanRoutesPage(self.driver)
+        routes_page.click_phone_button()
+        routes_page.set_phone_number(data.phone_number)
+        routes_page.click_phone_next_button()
+        routes_page.set_verification_code()
+        routes_page.click_confirm_button_in_verification_popup()
+        assert self.driver.find_element(*routes_page.phone_field).get_property('value') == data.phone_number
+
+    # Prueba 4: Agregar tarjeta de crédito como método de pago
+    def test_payment_method(self):
+        routes_page = UrbanRoutesPage(self.driver)
+        routes_page.click_payment_method_field()  # Presiona el campo de método de pago
+        routes_page.click_add_card_button()  # Presiona el botón de agregar tarjeta
+        routes_page.set_card_number()  # Ingresa el número de tarjeta
+        routes_page.set_card_code()  # Ingresa el código de la tarjeta
+        routes_page.press_tab_key()  # Presiona la tecla TAB
+        routes_page.click_add_card_confirm_button()  # Presiona el botón de confirmación
+        routes_page.click_exit_button_in_payment_popup()  # Presiona el botón de salida
+        assert self.driver.find_element(*routes_page.payment_method_selected).text == 'Tarjeta'
+
+    # Prueba 5: Agregar mensaje para el conductor
+    def test_message_for_driver(self):
+        routes_page = UrbanRoutesPage(self.driver)
+        routes_page.set_message_to_driver() # Ingresa el mensaje para el conductor
+        assert routes_page.driver.find_element(*routes_page.message_to_driver_field).get_property('value') == data.message_for_driver
+
+    # Prueba 6: Solicitar una manta y pañuelos
+    def test_click_blankets_and_tissues_button(self):
+        routes_page = UrbanRoutesPage(self.driver)
+        initial_state = routes_page.get_blankets_and_tissues_button_state()
+        routes_page.click_blankets_and_tissues_button()
+        final_state = routes_page.get_blankets_and_tissues_button_state()
+        assert initial_state != final_state, "El estado del botón no cambió."
+
+    # Prueba 7: Solicitar n helados
+    def test_add_ice_creams(self):
+        routes_page = UrbanRoutesPage(self.driver)
+        ice_cream_to_order = 2
+        routes_page.click_add_ice_cream_button(ice_cream_to_order)
+        assert self.driver.find_element(*routes_page.ice_cream_counter).text == str(ice_cream_to_order)
+
+    # Prueba 8: Solicitar un taxi y aparece el modal con la información
+    def test_click_order_taxi_button(self):
+        routes_page = UrbanRoutesPage(self.driver)
+        routes_page.click_order_taxi_button()
+        assert self.driver.find_element(*routes_page.waiting_popup_header).text == 'Buscar automóvil'
+
+    # Prueba 9: Esperar a que aparezca la información del conductor
+    def test_driver_information_modal_displayed(self):
+        routes_page = UrbanRoutesPage(self.driver)
+        assert self.driver.find_element(*routes_page.waiting_popup_header).text != ''
+        time.sleep(45)
 
     @classmethod
     def teardown_class(cls):
